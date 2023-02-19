@@ -3,6 +3,11 @@ import { ScrollMenu, VisibilityContext } from "react-horizontal-scrolling-menu";
 import { AiFillPlayCircle, AiFillPauseCircle } from "react-icons/ai";
 import { MdArrowBackIosNew, MdArrowForwardIos } from "react-icons/md";
 
+type Props = {
+  playing: any;
+  setPlaying: any;
+}
+
 const songData = [
   {
     id: 0,
@@ -50,9 +55,8 @@ const songData = [
   },
 ];
 
-function PlayList() {
+function PlayList({ playing, setPlaying }: Props) {
   const [items, setItems] = useState(songData);
-  const [playing, setPlaying] = useState(0);
   const [audio, setAudio] = useState<any>(null);
   const [audioChange, setAudioChange] = useState(false);
 
