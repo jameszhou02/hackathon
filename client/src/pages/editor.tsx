@@ -1,14 +1,19 @@
 import React from "react";
 import { Inter } from "@next/font/google";
-import { Navbar, HomeWrapper, VideoEditor, Footer } from "../components";
+import { Navbar, HomeWrapper, Footer } from "../components";
+import VideoPlayer from "@/components/VideoPlayer";
 
-type Props = {};
+type Props = {
 
+};
+const url = "/sample.mp4";
 export default function Editor(props: Props) {
   return (
     <HomeWrapper>
       <Navbar />
-      <VideoEditor />
+      <div className="w-full flex justify-center pt-10">
+        <VideoPlayer videoSrc={url} />
+      </div>
       <Footer />
     </HomeWrapper>
   );
