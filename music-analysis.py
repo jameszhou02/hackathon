@@ -7,8 +7,8 @@ import os
 import sys
 import stat
 from typing import Dict, Tuple, Optional, IO
-import aubio
 import librosa
+import numpy as np
 from scipy import signal
 import soundfile as sf
 import modal
@@ -118,45 +118,38 @@ def transient_detection(inp=None, sink=str(ROOT_DIR / 'music/temp.wav')):
     '''
     inp = inp or in_path
     drums, _ = librosa.load(inp + '/drums.mp3')
-    samplerate = drums.samplerate
+    # samplerate = drums.samplerate
 
-    lowpass = aubio.digital_filter(3)
-    lowpass.set_biquad(*BESSEL_LP)
-
-    # create output file
-    kicks = aubio.sink(sink, samplerate)
-
-    total_frames = 0
-    print("Lowpassing the drum stem")
-    while True:
-        # read from source
-        samples, read = drums()
-        # filter samples
-        filtered_samples = lowpass(samples)
-        # write to sink
-        kicks(filtered_samples, read)
-        # count frames read
-        total_frames += read
-        # end of file reached
-        if read < drums.hop_size:
-            break
-    print("Lowpass finished")
-    # os.chmod(sink, stat.S_IRWXU)
+    b, a = signal.butter(3, 0.02)
+    drums = signal.lfilter(b, a, drums)
+    sf.write('music/temp.wav', drums, 22050, 'PCM_24')
 
     x, sr = librosa.load(sink)
     onset_frames = librosa.onset.onset_detect(
         x, sr=sr, wait=1, pre_avg=1, post_avg=1, pre_max=1, post_max=1)
     onset_times = librosa.frames_to_time(onset_frames)
+    # clicks = librosa.clicks(frames=onset_frames, sr=sr, length=len(x))
+    # sf.write('music/clicks2.wav', x+clicks, 22050, 'PCM_24')
 
     return onset_times
 
+def bpm_detection(inp=None, sink=str(ROOT_DIR / 'music/temp.wav')):
+    '''
+    really poor accuracy of bpm detection lol...
+    lesson: never use aubio again
+    '''
+    full_track, sr = librosa.load(inp)
+    tempo, beats = librosa.beat.beat_track(y=full_track, sr=sr)
 
+    return tempo
 
 # @stub.local_entrypoint
 # def main():
 #     separate.call()
 if __name__ == '__main__':
     # separate()
-    FOR_TRANSIENT = str(ROOT_DIR / 'music/separated/htdemucs/turnonthelightsagain')
-    from pprint import pprint
-    pprint(transient_detection(FOR_TRANSIENT))
+    song_name = 'turnonthelightsagain'
+    FOR_TRANSIENT = str(ROOT_DIR / f'music/separated/htdemucs/{song_name}')
+    transients = transient_detection(FOR_TRANSIENT)
+    FOR_BPM = str(ROOT_DIR / f'music/originals/{song_name}.mp3')
+    print(bpm_detection(FOR_BPM))
