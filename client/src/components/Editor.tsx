@@ -71,6 +71,18 @@ const Editor = (props: Props) => {
     }
   }, [files]);
 
+  const handleTest = async () => {
+    const mp4Json = await fetch("http://localhost:4000/test", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      mode: "cors",
+    });
+    const mp4Link = await mp4Json.json();
+    console.log(mp4Link);
+  };
+
   const handleCreate = async () => {
     if (value.length > 0 || file) {
       if (file) {
@@ -81,11 +93,43 @@ const Editor = (props: Props) => {
         await uploadBytes(fileRef, file).then((snapshot) => {
           console.log("Uploaded a blob or file!");
         });
+
+        const mp3 = await fetch("http://localhost:4000/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          mode: "cors",
+          body: JSON.stringify({
+            fileName: file.name,
+            artStyle: artStyle,
+            speed: speed,
+            objects: objects,
+            effects: effects,
+            tempoChange: tempoChange,
+          }),
+        });
+        const mp3Json = await mp3.json();
+        console.log(mp3Json);
+
         setLoading(false);
+        // wait for ml stuff
+        // fetch ml stuff
         // load video underneath
         // provide option to edit further -> editor
       } else {
-        console.log("testing");
+        const test = await fetch("http://localhost:4000/uploadyoutube", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          mode: "cors",
+          body: JSON.stringify({
+            url: "https://www.youtube.com/watch?v=_ovdm2yX4MA",
+          }),
+        });
+        const testJson = await test.json();
+        console.log(testJson);
         // const vid = await fetch("https://www.youtube.com/watch?v=C0DPdy98e4c");
         // const vidJson = await vid.json();
         // console.log(vidJson);
@@ -107,6 +151,12 @@ const Editor = (props: Props) => {
   return (
     <div className="w-full">
       <div className="w-full flex flex-col space-y-4 items-center justify-center">
+        <button
+          className="text-white bg-red-500 px-5 py-2 text-center"
+          onClick={() => handleTest()}
+        >
+          TEST
+        </button>
         <TextInput
           placeholder="Your link here"
           variant="filled"
@@ -116,9 +166,16 @@ const Editor = (props: Props) => {
           onChange={(event) => setValue(event.currentTarget.value)}
         />
         <Dropzone
-          onDrop={(files) => setError(false)}
-          onReject={(files) => setError(true)}
-          maxSize={3 * 1024 ** 2}
+          onDrop={(files) => {
+            setFiles(files);
+            setError(false);
+            console.log("accepted");
+          }}
+          onReject={(files) => {
+            console.log("rejected");
+            setError(true);
+          }}
+          maxSize={10 * 1024 ** 2}
           accept={{
             "audio/*": [".mp3", "mpeg", ".wav", ".aac", ".ogg", ".m4a"],
           }}
@@ -158,7 +215,7 @@ const Editor = (props: Props) => {
           <button
             className={
               "text-white transition-all text-center px-8 py-3 rounded-lg font-extralight tracking-wider text-lg basis-full " +
-              (value.length > 0 && !error
+              (value.length > 0 || !error
                 ? " bg-teal-700 hover:bg-teal-800 cursor-pointer"
                 : " bg-slate-700 hover:bg-slate-800 cursor-not-allowed")
             }
