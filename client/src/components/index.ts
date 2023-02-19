@@ -5,7 +5,7 @@ import Footer from "./Footer";
 import SongCard from "./SongCard";
 import PlayList from "./PlayList";
 import Editor from "./Editor";
-import VideoEditor from "./VideoEditor";
+
 
 export {
   Navbar,
@@ -15,5 +15,4 @@ export {
   SongCard,
   PlayList,
   Editor,
-  VideoEditor,
 };
