@@ -71,18 +71,6 @@ const Editor = (props: Props) => {
     }
   }, [files]);
 
-  const handleTest = async () => {
-    const mp4Json = await fetch("http://localhost:4000/test", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      mode: "cors",
-    });
-    const mp4Link = await mp4Json.json();
-    console.log(mp4Link);
-  };
-
   const handleCreate = async () => {
     if (value.length > 0 || file) {
       if (file) {
@@ -109,70 +97,89 @@ const Editor = (props: Props) => {
             tempoChange: tempoChange,
           }),
         });
-        const mp3Json = await mp3.json();
-        console.log(mp3Json);
-
-        setLoading(false);
         // wait for ml stuff
         // fetch ml stuff
         // load video underneath
         // provide option to edit further -> editor
+        setLoading(false);
       } else {
-        const test = await fetch("http://localhost:4000/uploadyoutube", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          mode: "cors",
-          body: JSON.stringify({
-            url: "https://www.youtube.com/watch?v=_ovdm2yX4MA",
-          }),
-        });
-        const testJson = await test.json();
-        console.log(testJson);
-        // const vid = await fetch("https://www.youtube.com/watch?v=C0DPdy98e4c");
-        // const vidJson = await vid.json();
-        // console.log(vidJson);
+        let res;
+        await isValidYouTubeLink(value)
+          .then((isValid) => {
+            console.log(isValid ? "Valid video" : "Invalid video");
+            if (isValid) {
+              res = true;
+              setError(false);
+            } else {
+              res = false;
+            }
+          })
+          .catch((error) => {
+            console.error(error);
+            res = false;
+          });
 
-        // const id = value.split("v=")[1];
-        // validVideoId(id);
-        // setLoading(true);
-        // setCreateError(false);
-        // setError(false);
-        // // load video underneath
-        // // provide option to edit further -> editor
-        // setLoading(false);
+        if (res) {
+          console.log("here");
+          const test = await fetch("http://localhost:4000/uploadyoutube", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            mode: "cors",
+            body: JSON.stringify({
+              url: value,
+            }),
+          });
+          const testJson = await test.json();
+          console.log(testJson);
+        } else {
+          setError(true);
+        }
       }
     } else {
       setCreateError(true);
     }
   };
 
+  const fetch = require("node-fetch");
+
+  const videoIdRegex =
+    /(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+
+  function isValidYouTubeLink(url) {
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+      return Promise.resolve(false);
+    }
+    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=id&key=AIzaSyAPLlV2-9zjwvsgOA9ZBbD_23FjPk-vYhM`;
+    return fetch(apiUrl)
+      .then((response) => response.json())
+      .then((data) => data.items.length > 0);
+  }
+
+  function extractVideoId(url) {
+    const match = url.match(videoIdRegex);
+    return match ? match[1] : null;
+  }
+
   return (
     <div className="w-full">
       <div className="w-full flex flex-col space-y-4 items-center justify-center">
-        <button
-          className="text-white bg-red-500 px-5 py-2 text-center"
-          onClick={() => handleTest()}
-        >
-          TEST
-        </button>
-        <TextInput
+        {/* <TextInput
           placeholder="Your link here"
           variant="filled"
           className="w-3/4"
           rightSection={<AiOutlineSearch size={16} />}
           value={value}
           onChange={(event) => setValue(event.currentTarget.value)}
-        />
+        /> */}
         <Dropzone
           onDrop={(files) => {
             setFiles(files);
             setError(false);
-            console.log("accepted");
           }}
           onReject={(files) => {
-            console.log("rejected");
             setError(true);
           }}
           maxSize={10 * 1024 ** 2}

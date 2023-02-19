@@ -1,6 +1,21 @@
 const express = require("express");
 const cors = require("cors");
 const { spawn } = require("child_process");
+const admin = require("firebase-admin");
+const serviceAccount = require("./key.json");
+const youtubedl = require("youtube-dl-exec");
+const stream = require("stream");
+const fs = require("fs");
+const streamifier = require("streamifier");
+const { promisify } = require("util");
+
+const firebaseApp = admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: "hackathon-8e9ac.firebaseapp.com",
+});
+//use python sdk to upload to firestore, save file name and pass to frontend s
+
+const bucket = admin.storage().bucket();
 
 const app = express();
 
@@ -39,19 +54,41 @@ app.get("/test", (req, res) => {
   res.send({ message: dataToSend });
 });
 
-app.post("/youtubeupload", (req, res) => {
-  // req is valid video file
+app.post("/uploadyoutube", async (req, res) => {
   console.log(req.body);
 
-  // process the video file w/ the backend stuff
-  const diffusedFile = () => {
-    // do stuff
+  let id = req.body.url;
+  id = id.split("v=")[1];
+  // download video file from youtube
+  const output = id + ".mp3";
+
+  await youtubedl(req.body.url, {
+    extractAudio: true,
+    audioFormat: "mp3",
+    output: output,
+  });
+
+  const fileName = "./" + output;
+  const bucket = admin.storage().bucket();
+
+  const metadata = {
+    // metadata: {
+    //   // This line is very important. It's to create a download token.
+    //   firebaseStorageDownloadTokens: uuid(),
+    // },
+    contentType: "audio/mp3",
   };
 
-  res.send({ diffusedFile: "filestorage name" });
+  // Uploads a local file to the bucket
+  await bucket.upload(fileName, {
+    // Support for HTTP requests made with `Accept-Encoding: gzip`
+    metadata: metadata,
+  });
+
+  console.log(`${fileName} uploaded.`);
 });
 
-app.post("/upload", (req, res) => {
+app.post("/upload", async (req, res) => {
   // req is valid video file
   console.log("here!!");
   console.log(req.body);
