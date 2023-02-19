@@ -15,7 +15,7 @@ import { BsFillPencilFill } from "react-icons/bs";
 const AudioBar = dynamic(() => import("@/components/AudioBar"), { ssr: false });
 type Props = {};
 
-const videoUrl = "/sample.mp4";
+const videoUrl = "/cudi.mp4";
 const audioUrl = "/sample.mp3";
 
 const RTE = dynamic(() => import("@mantine/rte"), {
@@ -30,7 +30,7 @@ export default function Editor(props: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [start, setStart] = useState<number | null>(null);
   const [end, setEnd] = useState<number | null>(null);
-  const [rangeValue, setRangeValue] = useState<[number, number]>([0, 10]);
+  const [rangeValue, setRangeValue] = useState<[number, number]>([0, 1]);
   const [loading, setLoading] = useState(false);
   const [prompt, onChange] = useState("");
   const [artStyle, setArtStyle] = useState<string | null>(null);
@@ -59,11 +59,13 @@ export default function Editor(props: Props) {
     setLoading(true);
   };
 
+  console.log(video?.current?.duration);
+
   return (
     <HomeWrapper>
       <Navbar />
       <div className="w-full flex justify-between space-x-20 pt-10">
-        <div className="w-4/12 flex flex-col justify-between">
+        <div className="w-1/2 flex flex-col justify-between">
           <div className="space-y-2">
             <p className="text-2xl">Edit Video Specifics</p>
             <div>
@@ -199,21 +201,21 @@ export default function Editor(props: Props) {
               style={{ flex: "1 0 0" }}
               onClick={() => generateWith()}
             >
-              <div className="flex justify-center items-center space-x-4 ">
-                <p>Regenerate With Prompts</p>
+              <div className="flex text-sm justify-center items-center space-x-4 ">
+                <p className="text-center">Regenerate With Prompts</p>
               </div>
             </button>
             <button
               className="bg-black text-white transition-all text-center px-8 py-3 rounded-lg font-extralight tracking-wider text-lg basis-full"
               onClick={() => generateWithout()}
             >
-              <div className="flex justify-between items-center space-x-4">
-                <p>Regenerate Without Prompts</p>
+              <div className="flex text-sm justify-center items-center space-x-4">
+                <p className="text-center">Regenerate Without Prompts</p>
               </div>
             </button>
           </div>
         </div>
-        <div className="w-8/12">
+        <div className="w-1/2 flex flex-col justify-between">
           <div className="relative">
             <video
               ref={videoRef}
@@ -230,19 +232,19 @@ export default function Editor(props: Props) {
             onSelectionChange={handleSelectionChange}
             rangeValue={rangeValue}
           />
-          <RangeSlider
+          {/* <RangeSlider
             labelAlwaysOn
             value={rangeValue}
             onChange={setRangeValue}
             thumbSize={14}
             mt="xl"
-            min={0}
-            max={videoRef?.current?.duration}
-            defaultValue={[0, 5]}
+            min={10}
+            max={120}
+            defaultValue={[0, 10]}
             minRange={0.5}
             step={0.1}
             label={(value) => `${value.toFixed(2)} seconds`}
-          />
+          /> */}
         </div>
       </div>
       <Footer />

@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import WaveSurfer from "wavesurfer.js";
-import * as WaveSurferRegions from "wavesurfer.js/dist/plugin/wavesurfer.regions.js";
 interface Props {
   audioSrc: string;
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -23,20 +22,6 @@ const AudioBar = ({ audioSrc, videoRef, rangeValue }: Props) => {
       responsive: true,
       height: 50,
       backend: "MediaElement",
-      plugins: [
-        WaveSurferRegions.create({
-          regions: [
-            {
-              start: rangeValue[0],
-              end: rangeValue[1],
-              color: "hsla(400, 100%, 30%, 0.1)",
-            },
-          ],
-          dragSelection: {
-            slop: 5,
-          },
-        }),
-      ],
     });
 
     wavesurfer.enableDragSelection({
@@ -65,7 +50,9 @@ const AudioBar = ({ audioSrc, videoRef, rangeValue }: Props) => {
       if (videoRef.current && wavesurferRef.current) {
         const time = videoRef.current.currentTime;
         setCurrentTime(time);
-        wavesurferRef.current.seekTo(time / duration);
+        if (time < duration) {
+          wavesurferRef.current.seekTo(time / duration);
+        }
       }
     };
 

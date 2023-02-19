@@ -11,14 +11,6 @@ const firebaseConfig = {
   appId: "1:423832736018:web:ed9fbca5fbd8a157c8a3cb",
 };
 
-// Get a list of cities from your database
-// async function getCities(db) {
-//   const citiesCol = collection(db, 'cities');
-//   const citySnapshot = await getDocs(citiesCol);
-//   const cityList = citySnapshot.docs.map(doc => doc.data());
-//   return cityList;
-// }
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);

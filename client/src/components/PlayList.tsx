@@ -6,7 +6,7 @@ import { MdArrowBackIosNew, MdArrowForwardIos } from "react-icons/md";
 type Props = {
   playing: any;
   setPlaying: any;
-}
+};
 
 const songData = [
   {
